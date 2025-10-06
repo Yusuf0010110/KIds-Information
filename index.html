@@ -6,35 +6,65 @@
 <title>Game Hub - Yusuf</title>
 <style>
 body {background:#000;color:#fff;font-family:sans-serif;text-align:center;padding:40px;}
-button {padding:10px 20px;font-size:18px;margin:10px;cursor:pointer;}
+h1 {margin-bottom:20px;}
+button {padding:10px 20px;font-size:16px;margin:10px;cursor:pointer;}
 #gameArea {margin-top:20px;}
+.game-section {margin-top:20px; border:1px solid #fff; padding:20px; border-radius:10px;}
+.number-buttons button, .rps-buttons button {margin:5px;}
 </style>
 </head>
 <body>
 <h1>Game Hub</h1>
-<p>Click a game to play:</p>
-<button id="guessBtn">Number Guess</button>
-<button id="alertBtn">Simple Alert Game</button>
+<p>Select a game to play:</p>
+<button id="numberGameBtn">Number Guess</button>
+<button id="rpsGameBtn">Rock Paper Scissors</button>
 
 <div id="gameArea"></div>
 
 <script>
 const gameArea = document.getElementById('gameArea');
 
-document.getElementById('guessBtn').addEventListener('click', function() {
-  gameArea.innerHTML = '';
-  const secret = Math.floor(Math.random() * 10) + 1;
-  let guess = prompt('Guess a number between 1 and 10');
-  if (guess !== null) {
-    guess = parseInt(guess);
-    if (guess === secret) alert('You got it!');
-    else alert('Wrong! It was ' + secret);
+/* ---------- Number Guess Game ---------- */
+document.getElementById('numberGameBtn').addEventListener('click', function() {
+  gameArea.innerHTML = '<div class="game-section"><p>Guess a number between 1 and 5:</p><div class="number-buttons"></div><p id="result"></p></div>';
+  const buttonsDiv = document.querySelector('.number-buttons');
+  const secret = Math.floor(Math.random() * 5) + 1;
+  const result = document.getElementById('result');
+
+  for(let i=1;i<=5;i++){
+    const btn = document.createElement('button');
+    btn.textContent = i;
+    btn.addEventListener('click', function(){
+      if(i===secret){
+        result.textContent = '🎉 You got it! It was ' + secret;
+      } else {
+        result.textContent = '❌ Wrong! Try again.';
+      }
+    });
+    buttonsDiv.appendChild(btn);
   }
 });
 
-document.getElementById('alertBtn').addEventListener('click', function() {
-  gameArea.innerHTML = '';
-  alert('This is a simple alert game! Try again.');
+/* ---------- Rock Paper Scissors ---------- */
+document.getElementById('rpsGameBtn').addEventListener('click', function() {
+  gameArea.innerHTML = '<div class="game-section"><p>Choose your move:</p><div class="rps-buttons"></div><p id="rpsResult"></p></div>';
+  const moves = ['Rock','Paper','Scissors'];
+  const buttonsDiv = document.querySelector('.rps-buttons');
+  const result = document.getElementById('rpsResult');
+
+  moves.forEach(move => {
+    const btn = document.createElement('button');
+    btn.textContent = move;
+    btn.addEventListener('click', function(){
+      const computer = moves[Math.floor(Math.random()*3)];
+      let outcome = '';
+      if(move === computer) outcome = 'Draw!';
+      else if((move==='Rock' && computer==='Scissors') || (move==='Paper' && computer==='Rock') || (move==='Scissors' && computer==='Paper')) outcome = 'You Win!';
+      else outcome = 'You Lose!';
+      result.textContent = `You: ${move} • Computer: ${computer} → ${outcome}`;
+    });
+    buttonsDiv.appendChild(btn);
+  });
 });
 </script>
 </body>
