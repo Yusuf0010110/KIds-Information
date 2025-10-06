@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Game Hub — Yusuf</title>
+<style>
+  :root{
+    --bg:#0f1720; --panel:#0b1220; --muted:#9aa7b2; --accent:#2dd4bf;
+    --card:#0c161f; --glass: rgba(255,255,255,0.03);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:Inter, system-ui, Arial; background:linear-gradient(180deg,#071021 0%,var(--bg) 100%);
+    color:#e6eef3; -webkit-font-smoothing:antialiased;
+  }
+  header{display:flex;align-items:center;justify-content:space-between;padding:18px 28px;border-bottom:1px solid rgba(255,255,255,0.03)}
+  .brand{display:flex;gap:12px;align-items:center}
+  .logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#0ea5a4,#06b6d4);display:flex;align-items:center;justify-content:center;font-weight:800;color:#021;box-shadow:0 6px 20px rgba(2,6,23,0.6)}
+  h1{font-size:18px;margin:0}
+  .subtitle{color:var(--muted);font-size:13px}
+  .controls{display:flex;gap:10px;align-items:center}
+  button{background:var(--card);border:1px solid rgba(255,255,255,0.03);color:inherit;padding:8px 12px;border-radius:8px;font-weight:600;cursor:pointer}
+  button.ghost{background:transparent;border:1px dashed rgba(255,255,255,0.04);color:var(--muted)}
+  main{max-width:1100px;margin:26px auto;padding:18px}
+  .grid{display:grid;grid-template-columns:1fr 360px;gap:20px}
+  .panel{background:linear-gradient(180deg,var(--panel),#07101a);padding:16px;border-radius:12px;border:1px solid rgba(255,255,255,0.02)}
+  .games-list{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  .card{background:var(--card);padding:14px;border-radius:10px;min-height:92px;border:1px solid rgba(255,255,255,0.02);display:flex;flex-direction:column;justify-content:space-between}
+  .card h3{margin:0;font-size:15px}
+  .card p{margin:6px 0 0;color:var(--muted);font-size:13px}
+  .play-btn{margin-top:10px;align-self:flex-end;background:linear-gradient(90deg,#06b6d4,#2dd4bf);color:#021;border:none;padding:8px 10px;border-radius:8px;font-weight:700;cursor:pointer}
+  aside .panel h3{margin-top:0}
+  .small{font-size:13px;color:var(--muted)}
+  /* Game area */
+  #gameArea{min-height:420px;display:flex;align-items:center;justify-content:center;border-radius:12px;overflow:hidden}
+  .center{display:flex;flex-direction:column;align-items:center;gap:12px}
+  /* Tic Tac Toe */
+  .ttt-grid{display:grid;grid-template-columns:repeat(3,92px);grid-template-rows:repeat(3,92px);gap:8px}
+  .ttt-cell{width:92px;height:92px;border-radius:10px;background:var(--glass);display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:800;cursor:pointer}
+  /* Memory */
+  .mem-grid{display:grid;grid-template-columns:repeat(4,92px);gap:10px}
+  .mem-card{width:92px;height:92px;border-radius:8px;background:linear-gradient(180deg,#07121a,#081622);display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer}
+  .hidden{background:linear-gradient(180deg,#0b1720,#08131a)}
+  /* RPS */
+  .rps-row{display:flex;gap:10px}
+  .rps-btn{padding:10px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);cursor:pointer;background:var(--card);font-weight:700}
+  /* number guess */
+  .input{padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+  footer{padding:18px;text-align:center;color:var(--muted);font-size:13px}
+  /* Study mode */
+  .study{background:linear-gradient(180deg,#f7fafc,#edf2f7);color:#0b1220;padding:20px;border-radius:10px}
+  .study h2{margin:0;color:#073047}
+  .search{display:flex;margin-top:14px;gap:8px}
+  .search input{flex:1;padding:10px;border-radius:8px;border:1px solid #cbd5e1}
+  .search button{padding:10px;border-radius:8px;border:none;background:#0ea5a4;color:#022;font-weight:800}
+  .article{margin-top:18px;background:#ffffff;border-radius:8px;padding:14px;border:1px solid #e6eef6;color:#123}
+  @media(max-width:900px){.grid{grid-template-columns:1fr;}.games-list{grid-template-columns:1fr}.ttt-grid,.mem-grid{transform:scale(0.9)}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="logo">Y</div>
+    <div>
+      <h1>Game Hub</h1>
+      <div class="subtitle">mini games • quick breaks • Study Mode</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button id="homeBtn" class="ghost">Home</button>
+    <button id="studyBtn" title="Switch to Study Mode">Study Mode</button>
+  </div>
+</header>
+
+<main>
+  <div class="grid">
+    <!-- Left: game area -->
+    <section class="panel">
+      <div id="gameArea">
+        <div class="center">
+          <h2 style="margin:0">Pick a game</h2>
+          <div class="small" style="text-align:center;max-width:420px">Click a game card on the right to start playing. The site includes Tic-Tac-Toe, Memory Match, Rock-Paper-Scissors, and Number Guess.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right: game list -->
+    <aside>
+      <div class="panel">
+        <h3>Games</h3>
+        <div class="small" style="margin-bottom:12px">Tap any to launch</div>
+        <div class="games-list">
+          <div class="card">
+            <div>
+              <h3>Tic‑Tac‑Toe</h3>
+              <p>Play 1v1 vs local friend. Quick brain flex.</p>
+            </div>
+            <button class="play-btn" data-game="ttt">Play</button>
+          </div>
+
+          <div class="card">
+            <div>
+              <h3>Memory Match</h3>
+              <p>Flip cards, find pairs. Train the brain.</p>
+            </div>
+            <button class="play-btn" data-game="mem">Play</button>
+          </div>
+
+          <div class="card">
+            <div>
+              <h3>Rock • Paper • Scissors</h3>
+              <p>Fast rounds vs the computer. Best of 3?</p>
+            </div>
+            <button class="play-btn" data-game="rps">Play</button>
+          </div>
+
+          <div class="card">
+            <div>
+              <h3>Number Guess</h3>
+              <p>Guess a secret number — how fast can you do it?</p>
+            </div>
+            <button class="play-btn" data-game="num">Play</button>
+          </div>
+
+        </div>
+
+        <hr style="margin:14px 0;border:none;border-top:1px solid rgba(255,255,255,0.03)" />
+        <div style="display:flex;gap:8px;align-items:center;justify-content:space-between">
+          <div>
+            <div class="small">Quick tips</div>
+            <div style="font-size:13px;color:var(--muted)">Use Study Mode when someone approaches.</div>
+          </div>
+          <button id="randomBtn" class="ghost">Surprise</button>
+        </div>
+      </div>
+
+      <div style="height:14px"></div>
+
+      <div class="panel">
+        <h3>Stats</h3>
+        <div class="small">Wins, losses & quick plays</div>
+        <ul id="stats" style="margin-top:10px;color:var(--muted);padding-left:18px">
+          <li>TicTacToe: 0</li>
+          <li>Memory: 0</li>
+          <li>RPS: 0</li>
+          <li>Number Guess: 0</li>
+        </ul>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<!-- Templates / Study mode -->
+<div id="studyTemplate" style="display:none">
+  <div class="panel study" style="max-width:900px;margin:20px auto">
+    <h2>Knowledge Base — Study Mode</h2>
+    <div class="search">
+      <input id="studySearch" placeholder="Search topics (try: photosynthesis, world war II, cell structure)" />
+      <button id="studyGo">Search</button>
+    </div>
+
+    <div id="studyResults" class="article">
+      <h3>Welcome to Study Mode</h3>
+      <p>This page is a simple educational view with summaries and references. Use it for quick facts and summaries when you need to appear focused.</p>
+      <p style="margin:0.6em 0;color:#1e293b"><strong>Example:</strong> <em>Photosynthesis</em> — the process by which green plants and some other organisms use sunlight to synthesize foods from carbon dioxide and water. It generally involves the green pigment chlorophyll and generates oxygen as a byproduct.</p>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div style="max-width:1100px;margin:auto">Made for chill breaks • drop into GitHub Pages to host • © Yusuf</div>
+</footer>
+
+<script>
+/* ---------- helpers ---------- */
+const $ = sel => document.querySelector(sel);
+const $$ = sel => Array.from(document.querySelectorAll(sel));
+
+/* ---------- state & stats ---------- */
+let stats = {ttt:0, mem:0, rps:0, num:0};
+function updateStatsUI(){ 
+  const el = $('#stats'); 
+  el.innerHTML = \`<li>TicTacToe: \${stats.ttt}</li><li>Memory: \${stats.mem}</li><li>RPS: \${stats.rps}</li><li>Number Guess: \${stats.num}</li>\`;
+}
+
+/* ---------- main handlers ---------- */
+function showHome(){
+  $('#gameArea').innerHTML = '<div class=\"center\"><h2 style=\"margin:0\">Pick a game</h2><div class=\"small\" style=\"text-align:center;max-width:420px\">Click a game card on the right to start playing.</div></div>';
+}
+function showStudyMode(){
+  // show the built-in study template in the main panel (honest study-looking page)
+  const tpl = document.getElementById('studyTemplate').innerHTML;
+  $('#gameArea').innerHTML = tpl;
+  // wire search button
+  $('#studyGo').onclick = () => {
+    const q = $('#studySearch').value.trim().toLowerCase();
+    const res = $('#studyResults');
+    if(!q){ res.innerHTML = '<h3>Welcome to Study Mode</h3><p>Try searching a topic like <strong>photosynthesis</strong> or <strong>world war II</strong>.</p>'; return; }
+    // small canned answers (not claiming to be Wikipedia)
+    const db = {
+      'photosynthesis':'Photosynthesis — plants convert sunlight, CO2, and water into glucose and oxygen using chlorophyll.',
+      'world war ii':'World War II — global war from 1939 to 1945 involving most world powers; major events include D-Day and the Pacific campaigns.',
+      'cell structure':'Cell structure — cells have membrane, cytoplasm, DNA-containing nucleus (in eukaryotes), mitochondria, and other organelles.'
+    };
+    const found = Object.keys(db).find(k=>k.includes(q) || q.includes(k));
+    if(found) res.innerHTML = '<h3>'+found.split(' ').map(w=>w[0].toUpperCase()+w.slice(1)).join(' ')+'</h3><p>'+db[found]+' <br/><em style=\"color:#445\">(summary from general sources)</em></p>';
+    else res.innerHTML = '<h3>No quick summary found</h3><p>Try another topic. Study Mode has short canned summaries for common topics.</p>';
+  };
+}
+
+function playRandom(){ const games = ['ttt','mem','rps','num']; playGame(games[Math.floor(Math.random()*games.length)]); }
+
+/* ---------- game launcher ---------- */
+function playGame(g){
+  if(g==='ttt') startTicTacToe();
+  if(g==='mem') startMemory();
+  if(g==='rps') startRPS();
+  if(g==='num') startNumberGuess();
+}
+
+/* ---------- TIC TAC TOE (local 2-player) ---------- */
+function startTicTacToe(){
+  let board = Array(9).fill('');
+  let turn = 'X'; let over=false;
+  const area = document.createElement('div');
+  area.innerHTML = '<div style=\"display:flex;flex-direction:column;align-items:center\"><h2>Tic‑Tac‑Toe</h2><div class=\"ttt-grid\"></div><div style=\"margin-top:12px\"><button id=\"tttReset\">Reset</button><button id=\"tttDone\" style=\"margin-left:8px\" class=\"ghost\">Done</button></div></div>';
+  $('#gameArea').innerHTML=''; $('#gameArea').appendChild(area);
+  const grid = $('.ttt-grid');
+  function render(){
+    grid.innerHTML='';
+    for(let i=0;i<9;i++){
+      const cell = document.createElement('div'); cell.className='ttt-cell'; cell.textContent = board[i];
+      cell.onclick = ()=>{ if(over||board[i]) return; board[i]=turn; turn = turn==='X'?'O':'X'; render(); checkEnd(); };
+      grid.appendChild(cell);
+    }
+  }
+  function checkEnd(){
+    const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+    for(const w of wins){ const [a,b,c]=w; if(board[a] && board[a]===board[b] && board[b]===board[c]){ over=true; alert('Winner: '+board[a]); stats.ttt++; updateStatsUI(); return; } }
+    if(!board.includes('')){ over=true; alert('Draw'); stats.ttt++; updateStatsUI(); }
+  }
+  $('#tttReset').onclick = ()=>{ board=Array(9).fill('');turn='X';over=false;render(); }
+  $('#tttDone').onclick = ()=> showHome();
+  render();
+}
+
+/* ---------- MEMORY MATCH ---------- */
+function startMemory(){
+  const icons = ['🍉','🍋','🍓','🍇','🍌','🍒','🍊','🥝'];
+  let deck = icons.concat(icons).sort(()=>Math.random()-0.5);
+  let flipped = [], matched = [];
+  let moves = 0;
+  const area = document.createElement('div');
+  area.innerHTML = '<div style=\"display:flex;flex-direction:column;align-items:center\"><h2>Memory Match</h2><div class=\"mem-grid\"></div><div style=\"margin-top:12px\"><button id=\"memReset\">Reset</button><button id=\"memDone\" class=\"ghost\" style=\"margin-left:8px\">Done</button></div></div>';
+  $('#gameArea').innerHTML=''; $('#gameArea').appendChild(area);
+  const grid = $('.mem-grid');
+  function render(){
+    grid.innerHTML='';
+    for(let i=0;i<deck.length;i++){
+      const el = document.createElement('div'); el.className='mem-card';
+      if(matched.includes(i) || flipped.includes(i)) el.textContent = deck[i]; else { el.textContent=''; el.classList.add('hidden'); }
+      el.onclick = ()=>{ if(flipped.includes(i)||matched.includes(i)) return; flipped.push(i); render(); checkFlip(); };
+      grid.appendChild(el);
+    }
+  }
+  function checkFlip(){
+    if(flipped.length===2){
+      moves++;
+      const [a,b]=flipped;
+      if(deck[a]===deck[b]){ matched.push(a,b); flipped=[]; if(matched.length===deck.length){ setTimeout(()=>{alert('You matched them all! Moves: '+moves); stats.mem++; updateStatsUI();},200); } }
+      else { setTimeout(()=>{ flipped=[]; render(); },600); }
+    }
+  }
+  $('#memReset').onclick = ()=>{ deck = icons.concat(icons).sort(()=>Math.random()-0.5); flipped=[];matched=[];moves=0;render(); }
+  $('#memDone').onclick = ()=> showHome();
+  render();
+}
+
+/* ---------- ROCK PAPER SCISSORS ---------- */
+function startRPS(){
+  const area = document.createElement('div');
+  area.innerHTML = '<div style=\"display:flex;flex-direction:column;align-items:center\"><h2>Rock Paper Scissors</h2><div class=\"rps-row\"><button class=\"rps-btn\">✊ Rock</button><button class=\"rps-btn\">✋ Paper</button><button class=\"rps-btn\">✌️ Scissors</button></div><div id=\"rpsRes\" style=\"margin-top:12px;color:var(--muted)\"></div><div style=\"margin-top:12px\"><button id=\"rpsDone\" class=\"ghost\">Done</button></div></div>';
+  $('#gameArea').innerHTML=''; $('#gameArea').appendChild(area);
+  const res = $('#rpsRes');
+  $$('.rps-btn').forEach(btn=>{
+    btn.onclick = ()=>{
+      const choices = ['Rock','Paper','Scissors']; const user = btn.textContent.trim().split(' ')[1]||btn.textContent;
+      const comp = choices[Math.floor(Math.random()*3)];
+      let outcome = 'Draw';
+      if((user.includes('Rock')&&comp==='Scissors')||(user.includes('Paper')&&comp==='Rock')||(user.includes('Scissors')&&comp==='Paper')) outcome='You win';
+      else if(user===comp) outcome='Draw'; else outcome='Computer wins';
+      res.innerHTML = '<div style=\"font-weight:700\">You: '+user+' • Computer: '+comp+'</div><div style=\"margin-top:8px;color:var(--muted)\">'+outcome+'</div>';
+      if(outcome==='You win') stats.rps++; else if(outcome==='Computer wins'){} else stats.rps++;
+      updateStatsUI();
+    }
+  });
+  $('#rpsDone').onclick = ()=> showHome();
+}
+
+/* ---------- NUMBER GUESS ---------- */
+function startNumberGuess(){
+  const secret = Math.floor(Math.random()*50)+1;
+  let tries=0;
+  const area = document.createElement('div');
+  area.innerHTML = '<div style=\"display:flex;flex-direction:column;align-items:center\"><h2>Guess the Number (1–50)</h2><input id=\"numInp\" class=\"input\" placeholder=\"Your guess\"/><div id=\"numMsg\" style=\"margin-top:10px;color:var(--muted)\"></div><div style=\"margin-top:12px\"><button id=\"numCheck\">Check</button><button id=\"numDone\" class=\"ghost\" style=\"margin-left:8px\">Done</button></div></div>';
+  $('#gameArea').innerHTML=''; $('#gameArea').appendChild(area);
+  $('#numCheck').onclick = ()=>{
+    const v = parseInt($('#numInp').value||'0',10); tries++;
+    const msg = $('#numMsg');
+    if(!v){ msg.textContent='Enter a valid number'; return; }
+    if(v===secret){ msg.textContent='Correct! Attempts: '+tries; stats.num++; updateStatsUI(); }
+    else if(v<secret) msg.textContent='Too low';
+    else msg.textContent='Too high';
+  };
+  $('#numDone').onclick = ()=> showHome();
+}
+
+/* ---------- wire buttons ---------- */
+document.addEventListener('click', e=>{
+  const g = e.target.closest('.play-btn')?.dataset?.game;
+  if(g) playGame(g);
+});
+$('#homeBtn').onclick = showHome;
+$('#studyBtn').onclick = showStudyMode;
+$('#randomBtn').onclick = playRandom;
+
+/* initial UI */
+showHome();
+updateStatsUI();
+</script>
+</body>
+</html>
