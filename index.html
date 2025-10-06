@@ -1,37 +1,34 @@
 <!DOCTYPE html>
-<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Geometry Dash Mini - Yusuf</title>
 <style>
-body {margin:0;background:#000;display:flex;justify-content:center;align-items:center;height:100vh;font-family:sans-serif;}
-canvas {background:#111;display:block;border:3px solid #0af;border-radius:12px;}
-#score {position:absolute;top:20px;color:#0af;font-size:24px;font-weight:bold;}
+body {margin:0; background:#111; display:flex; justify-content:center; align-items:center; height:100vh; font-family:sans-serif; overflow:hidden;}
+canvas {border:3px solid #0af; border-radius:10px; background:#000; display:block;}
+#score {position:absolute; top:20px; left:50%; transform:translateX(-50%); color:#0af; font-size:24px; font-weight:bold;}
 </style>
 </head>
 <body>
 <div id="score">Score: 0</div>
-<canvas id="game" width="600" height="300"></canvas>
-
+<canvas id="game" width="800" height="400"></canvas>
 <script>
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 
-let player = {x:50,y:250,w:30,h:30,vy:0,jumping:false};
+let player = {x:100, y:300, w:30, h:30, vy:0, jumping:false};
 let gravity = 0.8;
-let jumpPower = -12;
+let jumpPower = -15;
 let obstacles = [];
+let platforms = [];
 let spawnTimer = 0;
+let speed = 5;
 let score = 0;
-let speed = 4;
 let gameOver = false;
 
-function resetGame(){
-  player.y=250; player.vy=0; player.jumping=false;
-  obstacles=[]; spawnTimer=0; score=0; speed=4; gameOver=false;
-}
+// Generate initial platform
+platforms.push({x:0, y:350, w:canvas.width, h:50});
 
 document.addEventListener('keydown', e=>{
   if(e.code==='Space') jump();
@@ -46,46 +43,75 @@ function jump(){
 }
 
 function spawnObstacle(){
-  obstacles.push({x:canvas.width,y:260,w:30,h:40});
+  let height = 30 + Math.random()*40;
+  obstacles.push({x:canvas.width, y:350-height, w:30, h:height});
 }
 
 function update(){
-  if(gameOver) return;
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  
-  // player
-  player.vy += gravity;
-  player.y += player.vy;
-  if(player.y >= 250){player.y=250; player.vy=0; player.jumping=false;}
-  ctx.fillStyle = '#0af';
-  ctx.fillRect(player.x,player.y,player.w,player.h);
-  
-  // obstacles
-  spawnTimer++;
-  if(spawnTimer>90){spawnObstacle(); spawnTimer=0;}
-  
-  for(let i=obstacles.length-1;i>=0;i--){
-    obstacles[i].x -= speed;
-    ctx.fillStyle='#f00';
-    ctx.fillRect(obstacles[i].x,obstacles[i].y,obstacles[i].w,obstacles[i].h);
-    
-    // collision
-    if(player.x<obstacles[i].x+obstacles[i].w &&
-       player.x+player.w>obstacles[i].x &&
-       player.y<obstacles[i].y+obstacles[i].h &&
-       player.y+player.h>obstacles[i].y){
-         gameOver = true;
-         alert('Game Over! Score: '+score);
-         resetGame();
-    }
-    
-    // remove offscreen
-    if(obstacles[i].x+obstacles[i].w<0) obstacles.splice(i,1);
+  if(gameOver){
+    ctx.fillStyle='#fff';
+    ctx.font='30px sans-serif';
+    ctx.fillText('Game Over! Score: '+score, canvas.width/2-140, canvas.height/2);
+    return;
   }
   
-  // score
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  
+  // Move player
+  player.vy += gravity;
+  player.y += player.vy;
+  if(player.y + player.h >= 350){
+    player.y = 350 - player.h;
+    player.vy = 0;
+    player.jumping = false;
+  }
+  
+  // Draw platforms
+  ctx.fillStyle = '#222';
+  platforms.forEach(p=>{
+    ctx.fillRect(p.x, p.y, p.w, p.h);
+  });
+  
+  // Spawn obstacles
+  spawnTimer++;
+  if(spawnTimer > 90){
+    spawnObstacle();
+    spawnTimer=0;
+  }
+  
+  // Move obstacles
+  for(let i=obstacles.length-1;i>=0;i--){
+    obstacles[i].x -= speed;
+    // spike shape
+    ctx.fillStyle='#f00';
+    ctx.beginPath();
+    ctx.moveTo(obstacles[i].x, obstacles[i].y+obstacles[i].h);
+    ctx.lineTo(obstacles[i].x+obstacles[i].w/2, obstacles[i].y);
+    ctx.lineTo(obstacles[i].x+obstacles[i].w, obstacles[i].y+obstacles[i].h);
+    ctx.closePath();
+    ctx.fill();
+    
+    // collision
+    if(player.x < obstacles[i].x + obstacles[i].w &&
+       player.x + player.w > obstacles[i].x &&
+       player.y < obstacles[i].y + obstacles[i].h &&
+       player.y + player.h > obstacles[i].y){
+         gameOver = true;
+    }
+    
+    if(obstacles[i].x + obstacles[i].w < 0) obstacles.splice(i,1);
+  }
+  
+  // Draw player
+  ctx.fillStyle = '#0af';
+  ctx.fillRect(player.x, player.y, player.w, player.h);
+  
+  // Score
   score++;
   document.getElementById('score').textContent = 'Score: '+score;
+  
+  // Gradually increase speed
+  if(score%500 === 0) speed += 0.5;
   
   requestAnimationFrame(update);
 }
